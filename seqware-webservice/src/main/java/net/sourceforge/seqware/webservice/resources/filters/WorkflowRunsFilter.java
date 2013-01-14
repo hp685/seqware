@@ -133,8 +133,11 @@ public class WorkflowRunsFilter extends BasicResource {
         ReadableRepresentation fr = (ReadableRepresentation) entity;
         String filename = "/tmp/" + (new Random()).nextInt(Integer.MAX_VALUE) + ".ini";
         FileOutputStream out = new FileOutputStream(filename);
-        fr.write(out);
-        out.close();
+        try{
+            fr.write(out);
+        } finally{
+            out.close();
+        }
         return filename;
     }
 

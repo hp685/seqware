@@ -37,6 +37,7 @@ public class ProjectDAOHibernate extends HibernateDaoSupport implements ProjectD
   }
 
   /** {@inheritDoc} */
+    @Override
   public List<Project> list(Registration registration) {
     ArrayList<Project> projects = new ArrayList<Project>();
     if (registration == null)
@@ -51,11 +52,12 @@ public class ProjectDAOHibernate extends HibernateDaoSupport implements ProjectD
      * this.getHibernateTemplate().find(
      * "from Project as project where owner_id = ? order by project.name desc",
      * registration.getRegistrationId() ); }
-     */
-
-    for (Object project : expmts) {
-      projects.add((Project) project);
-    }
+    * 
+    *
+    *for (Object project : expmts) {
+    *  projects.add((Project) project);
+    *}
+    */
     return projects;
   }
 

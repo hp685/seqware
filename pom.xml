@@ -29,7 +29,7 @@
         <restlet.version>2.1-RC5</restlet.version>
         <opencsv.version>2.3</opencsv.version>
         <maven-assembly-plugin.version>2.3</maven-assembly-plugin.version>
-        <jetty-maven-plugin.version>7.0.0.pre5</jetty-maven-plugin.version>
+        <jetty-maven-plugin.version>8.1.8.v20121106</jetty-maven-plugin.version>
         <github.url>scm:git:git@github.com:SeqWare/seqware.git</github.url>
         <maven-jar-plugin.version>2.2</maven-jar-plugin.version>
         <maven-clean-plugin.version>2.5</maven-clean-plugin.version>

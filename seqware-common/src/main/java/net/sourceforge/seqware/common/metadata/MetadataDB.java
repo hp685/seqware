@@ -15,9 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-
 import javax.sql.DataSource;
-
 import net.sourceforge.seqware.common.model.ExperimentAttribute;
 import net.sourceforge.seqware.common.model.IUSAttribute;
 import net.sourceforge.seqware.common.model.LaneAttribute;
@@ -41,7 +39,6 @@ import net.sourceforge.seqware.common.module.FileMetadata;
 import net.sourceforge.seqware.common.module.ReturnValue;
 import net.sourceforge.seqware.common.util.Log;
 import net.sourceforge.seqware.common.util.maptools.MapTools;
-
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.log4j.Logger;
 
@@ -334,13 +331,21 @@ public class MetadataDB extends Metadata {
    * @throws java.sql.SQLException if any.
    * @param sqlQuery a {@link java.lang.String} object.
    * @return a int.
-   */
-  public int InsertAndReturnNewPrimaryKey(String sqlQuery, String SequenceID) throws SQLException {
-    executeUpdate(sqlQuery);
-    executeQuery("select currval('" + SequenceID + "')");
-    this.getSql().getResultSet().next();
-    return this.getSql().getResultSet().getInt(1);
-  }
+     */
+    public int InsertAndReturnNewPrimaryKey(String sqlQuery, String SequenceID) throws SQLException {
+        executeUpdate(sqlQuery);
+        executeQuery("select currval('" + SequenceID + "')");
+        ResultSet resultSet = null;
+        try {
+            resultSet = this.getSql().getResultSet();
+            resultSet.next();
+            return resultSet.getInt(1);
+        } finally {
+            if (resultSet != null) {
+                resultSet.close();
+            }
+        }
+    }
 
   // FIXME: This should all be a transaction. For now, we end up with cruft in
   // the DB if something failed.
@@ -1114,38 +1119,46 @@ public class MetadataDB extends Metadata {
       sql.append(" WHERE processing_id = " + processingID);
 
       // Execute above
-      PreparedStatement ps = this.getDb().prepareStatement(sql.toString());
-      for (int i = 0; i < params.size(); i++) {
-        ps.setObject(i + 1, params.get(i));
-      }
-      ps.executeUpdate();
+      PreparedStatement ps = null;
+        try {
+            ps = this.getDb().prepareStatement(sql.toString());
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            ps.executeUpdate();
 
-      // Add and associate files for each item
-      if (retval.getFiles() != null) {
-        for (FileMetadata file : retval.getFiles()) {
-          // If the file path is empty, warn and skip
-          if (file.getFilePath().compareTo("") == 0) {
-            logger.warn("WARNING: Skipping empty FilePath for ProcessingID entry: " + processingID);
-            continue;
-          }
+            // Add and associate files for each item
+            if (retval.getFiles() != null) {
+                for (FileMetadata file : retval.getFiles()) {
+                    // If the file path is empty, warn and skip
+                    if (file.getFilePath().compareTo("") == 0) {
+                        logger.warn("WARNING: Skipping empty FilePath for ProcessingID entry: " + processingID);
+                        continue;
+                    }
 
-          // If the meta type is empty, warn and skip
-          if (file.getMetaType().compareTo("") == 0) {
-            logger.warn("WARNING: Skipping empty MetaType for ProcessingID entry: " + processingID);
-            continue;
-          }
+                    // If the meta type is empty, warn and skip
+                    if (file.getMetaType().compareTo("") == 0) {
+                        logger.warn("WARNING: Skipping empty MetaType for ProcessingID entry: " + processingID);
+                        continue;
+                    }
 
-          // Add a new file entry
-          int fileID = insertFileRecord(file);
+                    // Add a new file entry
+                    int fileID = insertFileRecord(file);
 
-          linkProcessingAndFile(processingID, fileID);
+                    linkProcessingAndFile(processingID, fileID);
+                }
+            }
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
         }
-      }
     } catch (SQLException e) {
       e.printStackTrace();
       return new ReturnValue(null, "Could not execute one of the SQL commands: " + sql.toString() + "\nException: "
               + e.getMessage(), ReturnValue.SQLQUERYFAILED);
     }
+    
 
     /*
      * If no error, return success
@@ -1212,13 +1225,15 @@ public class MetadataDB extends Metadata {
       this.setDbmd(this.getDb().getMetaData());
     } catch (SQLException e) {
       return new ReturnValue(null,
-              "Could not retreive Connection Metadata from Database. Assuming connection was not successful: "
+              "Could not retrieve Connection Metadata from Database. Assuming connection was not successful: "
               + e.getMessage(), ReturnValue.DBCOULDNOTINITIALIZE);
     }
 
     // Create a SQL statement and preparedStatement
+    Statement createStatement = null;
     try {
-      this.setSql(this.getDb().createStatement());
+      createStatement = this.getDb().createStatement();
+      this.setSql(createStatement);
     } catch (SQLException e) {
       return new ReturnValue(null, "Could not create a SQL statement" + e.getMessage(), ReturnValue.SQLQUERYFAILED);
     }
@@ -1249,6 +1264,7 @@ public class MetadataDB extends Metadata {
         this.getDb().close();
       }
     } catch (SQLException e) {
+      Log.stdout("Failed to close database connection");
       ret.setStderr("Failed to close database connection: " + e.getMessage());
       ret.setExitStatus(ReturnValue.DBCOULDNOTDISCONNECT);
     }
@@ -1311,7 +1327,7 @@ public class MetadataDB extends Metadata {
    *
    * @return a {@link java.sql.Statement} object.
    */
-  public Statement getSql() {
+  private Statement getSql() {
     return sql;
   }
 
@@ -1321,7 +1337,7 @@ public class MetadataDB extends Metadata {
    *
    * @param sql a {@link java.sql.Statement} object.
    */
-  public void setSql(Statement sql) {
+  private void setSql(Statement sql) {
     this.sql = sql;
   }
 
@@ -1633,7 +1649,7 @@ public class MetadataDB extends Metadata {
   public int executeUpdate(String s) throws SQLException {
     logger.debug("MetadataDB executeUpdate:" + s);
     return getSql().executeUpdate(s);
-  }
+    }
 
   /**
    * {@inheritDoc}

@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeSet;
-
 import net.sourceforge.seqware.common.metadata.Metadata;
 import net.sourceforge.seqware.common.model.Experiment;
 import net.sourceforge.seqware.common.model.ExperimentAttribute;
@@ -48,7 +47,6 @@ import net.sourceforge.seqware.common.model.WorkflowRun;
 import net.sourceforge.seqware.common.module.FileMetadata;
 import net.sourceforge.seqware.common.module.ReturnValue;
 import net.sourceforge.seqware.common.util.Log;
-
 import org.apache.log4j.Logger;
 
 /**
@@ -88,87 +86,87 @@ public class FindAllTheFiles {
 
   private List<ReturnValue> returnValues = new ArrayList<ReturnValue>();
   /** Constant <code>STUDY_TITLE="Header.STUDY_TITLE.getTitle()"</code> */
-  public static String STUDY_TITLE = Header.STUDY_TITLE.getTitle();
+  public static final String STUDY_TITLE = Header.STUDY_TITLE.getTitle();
   /** Constant <code>STUDY_SWA="Header.STUDY_SWA.getTitle()"</code> */
-  public static String STUDY_SWA = Header.STUDY_SWA.getTitle();
+  public static final String STUDY_SWA = Header.STUDY_SWA.getTitle();
   /** Constant <code>STUDY_TAG_PREFIX="Header.STUDY_TAG_PREFIX.getTitle()"</code> */
-  public static String STUDY_TAG_PREFIX = Header.STUDY_TAG_PREFIX.getTitle();
+  public static final String STUDY_TAG_PREFIX = Header.STUDY_TAG_PREFIX.getTitle();
   /** Constant <code>STUDY_ATTRIBUTES="Header.STUDY_ATTRIBUTES.getTitle()"</code> */
-  public static String STUDY_ATTRIBUTES = Header.STUDY_ATTRIBUTES.getTitle();
+  public static final String STUDY_ATTRIBUTES = Header.STUDY_ATTRIBUTES.getTitle();
   /** Constant <code>EXPERIMENT_NAME="Header.EXPERIMENT_NAME.getTitle()"</code> */
-  public static String EXPERIMENT_NAME = Header.EXPERIMENT_NAME.getTitle();
+  public static final String EXPERIMENT_NAME = Header.EXPERIMENT_NAME.getTitle();
   /** Constant <code>EXPERIMENT_SWA="Header.EXPERIMENT_SWA.getTitle()"</code> */
-  public static String EXPERIMENT_SWA = Header.EXPERIMENT_SWA.getTitle();
+  public static final String EXPERIMENT_SWA = Header.EXPERIMENT_SWA.getTitle();
   /** Constant <code>EXPERIMENT_TAG_PREFIX="Header.EXPERIMENT_TAG_PREFIX.getTitle()"</code> */
-  public static String EXPERIMENT_TAG_PREFIX = Header.EXPERIMENT_TAG_PREFIX.getTitle();
+  public static final String EXPERIMENT_TAG_PREFIX = Header.EXPERIMENT_TAG_PREFIX.getTitle();
   /** Constant <code>EXPERIMENT_ATTRIBUTES="Header.EXPERIMENT_ATTRIBUTES.getTitle()"</code> */
-  public static String EXPERIMENT_ATTRIBUTES = Header.EXPERIMENT_ATTRIBUTES.getTitle();
+  public static final String EXPERIMENT_ATTRIBUTES = Header.EXPERIMENT_ATTRIBUTES.getTitle();
   /** Constant <code>PARENT_SAMPLE_NAME="Header.PARENT_SAMPLE_NAME.getTitle()"</code> */
-  public static String PARENT_SAMPLE_NAME = Header.PARENT_SAMPLE_NAME.getTitle();
+  public static final String PARENT_SAMPLE_NAME = Header.PARENT_SAMPLE_NAME.getTitle();
   /** Constant <code>PARENT_SAMPLE_SWA="Header.PARENT_SAMPLE_SWA.getTitle()"</code> */
-  public static String PARENT_SAMPLE_SWA = Header.PARENT_SAMPLE_SWA.getTitle();
+  public static final String PARENT_SAMPLE_SWA = Header.PARENT_SAMPLE_SWA.getTitle();
   /** Constant <code>PARENT_SAMPLE_TAG_PREFIX="Header.PARENT_SAMPLE_TAG_PREFIX.getTitl"{trunked}</code> */
-  public static String PARENT_SAMPLE_TAG_PREFIX = Header.PARENT_SAMPLE_TAG_PREFIX.getTitle();
+  public static final String PARENT_SAMPLE_TAG_PREFIX = Header.PARENT_SAMPLE_TAG_PREFIX.getTitle();
   /** Constant <code>PARENT_SAMPLE_ATTRIBUTES="Header.PARENT_SAMPLE_ATTRIBUTES.getTitl"{trunked}</code> */
-  public static String PARENT_SAMPLE_ATTRIBUTES = Header.PARENT_SAMPLE_ATTRIBUTES.getTitle();
+  public static final String PARENT_SAMPLE_ATTRIBUTES = Header.PARENT_SAMPLE_ATTRIBUTES.getTitle();
   /** Constant <code>SAMPLE_NAME="Header.SAMPLE_NAME.getTitle()"</code> */
-  public static String SAMPLE_NAME = Header.SAMPLE_NAME.getTitle();
+  public static final String SAMPLE_NAME = Header.SAMPLE_NAME.getTitle();
   /** Constant <code>SAMPLE_SWA="Header.SAMPLE_SWA.getTitle()"</code> */
-  public static String SAMPLE_SWA = Header.SAMPLE_SWA.getTitle();
+  public static final String SAMPLE_SWA = Header.SAMPLE_SWA.getTitle();
   /** Constant <code>SAMPLE_TAG_PREFIX="Header.SAMPLE_TAG_PREFIX.getTitle()"</code> */
-  public static String SAMPLE_TAG_PREFIX = Header.SAMPLE_TAG_PREFIX.getTitle();
+  public static final String SAMPLE_TAG_PREFIX = Header.SAMPLE_TAG_PREFIX.getTitle();
   /** Constant <code>SAMPLE_ATTRIBUTES="Header.SAMPLE_ATTRIBUTES.getTitle()"</code> */
-  public static String SAMPLE_ATTRIBUTES = Header.SAMPLE_ATTRIBUTES.getTitle();
+  public static final String SAMPLE_ATTRIBUTES = Header.SAMPLE_ATTRIBUTES.getTitle();
   /** Constant <code>IUS_SWA="Header.IUS_SWA.getTitle()"</code> */
-  public static String IUS_SWA = Header.IUS_SWA.getTitle();
+  public static final String IUS_SWA = Header.IUS_SWA.getTitle();
   /** Constant <code>IUS_TAG="Header.IUS_TAG.getTitle()"</code> */
-  public static String IUS_TAG = Header.IUS_TAG.getTitle();
+  public static final String IUS_TAG = Header.IUS_TAG.getTitle();
   /** Constant <code>IUS_TAG_PREFIX="Header.IUS_TAG_PREFIX.getTitle()"</code> */
-  public static String IUS_TAG_PREFIX = Header.IUS_TAG_PREFIX.getTitle();
+  public static final String IUS_TAG_PREFIX = Header.IUS_TAG_PREFIX.getTitle();
   /** Constant <code>IUS_ATTRIBUTES="Header.IUS_ATTRIBUTES.getTitle()"</code> */
-  public static String IUS_ATTRIBUTES = Header.IUS_ATTRIBUTES.getTitle();
+  public static final String IUS_ATTRIBUTES = Header.IUS_ATTRIBUTES.getTitle();
   /** Constant <code>LANE_NAME="Header.LANE_NAME.getTitle()"</code> */
-  public static String LANE_NAME = Header.LANE_NAME.getTitle();
+  public static final String LANE_NAME = Header.LANE_NAME.getTitle();
   /** Constant <code>LANE_SWA="Header.LANE_SWA.getTitle()"</code> */
-  public static String LANE_SWA = Header.LANE_SWA.getTitle();
+  public static final String LANE_SWA = Header.LANE_SWA.getTitle();
   /** Constant <code>LANE_NUM="Header.LANE_NUM.getTitle()"</code> */
-  public static String LANE_NUM = Header.LANE_NUM.getTitle();
+  public static final String LANE_NUM = Header.LANE_NUM.getTitle();
   /** Constant <code>LANE_TAG_PREFIX="Header.LANE_TAG_PREFIX.getTitle()"</code> */
-  public static String LANE_TAG_PREFIX = Header.LANE_TAG_PREFIX.getTitle();
+  public static final String LANE_TAG_PREFIX = Header.LANE_TAG_PREFIX.getTitle();
   /** Constant <code>LANE_ATTRIBUTES="Header.LANE_ATTRIBUTES.getTitle()"</code> */
-  public static String LANE_ATTRIBUTES = Header.LANE_ATTRIBUTES.getTitle();
+  public static final String LANE_ATTRIBUTES = Header.LANE_ATTRIBUTES.getTitle();
   /** Constant <code>SEQUENCER_RUN_NAME="Header.SEQUENCER_RUN_NAME.getTitle()"</code> */
-  public static String SEQUENCER_RUN_NAME = Header.SEQUENCER_RUN_NAME.getTitle();
+  public static final String SEQUENCER_RUN_NAME = Header.SEQUENCER_RUN_NAME.getTitle();
   /** Constant <code>SEQUENCER_RUN_SWA="Header.SEQUENCER_RUN_SWA.getTitle()"</code> */
-  public static String SEQUENCER_RUN_SWA = Header.SEQUENCER_RUN_SWA.getTitle();
+  public static final String SEQUENCER_RUN_SWA = Header.SEQUENCER_RUN_SWA.getTitle();
   /** Constant <code>SEQUENCER_RUN_TAG_PREFIX="Header.SEQUENCER_RUN_TAG_PREFIX.getTitl"{trunked}</code> */
-  public static String SEQUENCER_RUN_TAG_PREFIX = Header.SEQUENCER_RUN_TAG_PREFIX.getTitle();
+  public static final String SEQUENCER_RUN_TAG_PREFIX = Header.SEQUENCER_RUN_TAG_PREFIX.getTitle();
   /** Constant <code>SEQUENCER_RUN_ATTRIBUTES="Header.SEQUENCER_RUN_ATTRIBUTES.getTitl"{trunked}</code> */
-  public static String SEQUENCER_RUN_ATTRIBUTES = Header.SEQUENCER_RUN_ATTRIBUTES.getTitle();
+  public static final String SEQUENCER_RUN_ATTRIBUTES = Header.SEQUENCER_RUN_ATTRIBUTES.getTitle();
   /** Constant <code>WORKFLOW_RUN_NAME="Header.WORKFLOW_RUN_NAME.getTitle()"</code> */
-  public static String WORKFLOW_RUN_NAME = Header.WORKFLOW_RUN_NAME.getTitle();
+  public static final String WORKFLOW_RUN_NAME = Header.WORKFLOW_RUN_NAME.getTitle();
   /** Constant <code>WORKFLOW_RUN_SWA="Header.WORKFLOW_RUN_SWA.getTitle()"</code> */
-  public static String WORKFLOW_RUN_SWA = Header.WORKFLOW_RUN_SWA.getTitle();
+  public static final String WORKFLOW_RUN_SWA = Header.WORKFLOW_RUN_SWA.getTitle();
   /** Constant <code>WORKFLOW_RUN_STATUS="Header.WORKFLOW_RUN_STATUS.getTitle()"</code> */
-  public static String WORKFLOW_RUN_STATUS = Header.WORKFLOW_RUN_STATUS.getTitle();
+  public static final String WORKFLOW_RUN_STATUS = Header.WORKFLOW_RUN_STATUS.getTitle();
   /** Constant <code>WORKFLOW_NAME="Header.WORKFLOW_NAME.getTitle()"</code> */
-  public static String WORKFLOW_NAME = Header.WORKFLOW_NAME.getTitle();
+  public static final String WORKFLOW_NAME = Header.WORKFLOW_NAME.getTitle();
   /** Constant <code>WORKFLOW_SWA="Header.WORKFLOW_SWA.getTitle()"</code> */
-  public static String WORKFLOW_SWA = Header.WORKFLOW_SWA.getTitle();
+  public static final String WORKFLOW_SWA = Header.WORKFLOW_SWA.getTitle();
   /** Constant <code>WORKFLOW_VERSION="Header.WORKFLOW_VERSION.getTitle()"</code> */
-  public static String WORKFLOW_VERSION = Header.WORKFLOW_VERSION.getTitle();
+  public static final String WORKFLOW_VERSION = Header.WORKFLOW_VERSION.getTitle();
   /** Constant <code>FILE_SWA="Header.FILE_SWA.getTitle()"</code> */
-  public static String FILE_SWA = Header.FILE_SWA.getTitle();
+  public static final String FILE_SWA = Header.FILE_SWA.getTitle();
   /** Constant <code>PROCESSING_DATE="Header.PROCESSING_DATE.getTitle()"</code> */
-  public static String PROCESSING_DATE = Header.PROCESSING_DATE.getTitle();
+  public static final String PROCESSING_DATE = Header.PROCESSING_DATE.getTitle();
   /** Constant <code>PROCESSING_SWID="Header.PROCESSING_SWID.getTitle()"</code> */
-  public static String PROCESSING_SWID = Header.PROCESSING_SWID.getTitle();
+  public static final String PROCESSING_SWID = Header.PROCESSING_SWID.getTitle();
   /** Constant <code>PROCESSING_ALGO="Header.PROCESSING_ALGO.getTitle()"</code> */
-  public static String PROCESSING_ALGO = Header.PROCESSING_ALGO.getTitle();
+  public static final String PROCESSING_ALGO = Header.PROCESSING_ALGO.getTitle();
   /** Constant <code>PROCESSING_TAG_PREFIX="Header.PROCESSING_TAG_PREFIX.getTitle()"</code> */
-  public static String PROCESSING_TAG_PREFIX = Header.PROCESSING_TAG_PREFIX.getTitle();
+  public static final String PROCESSING_TAG_PREFIX = Header.PROCESSING_TAG_PREFIX.getTitle();
   /** Constant <code>PROCESSING_ATTRIBUTES="Header.PROCESSING_ATTRIBUTES.getTitle()"</code> */
-  public static String PROCESSING_ATTRIBUTES = Header.PROCESSING_ATTRIBUTES.getTitle();
+  public static final String PROCESSING_ATTRIBUTES = Header.PROCESSING_ATTRIBUTES.getTitle();
   /** Constant <code>FILETYPE_ALL="all"</code> */
   public static final String FILETYPE_ALL = "all";
   private Set<Integer> fileSwas = new HashSet<Integer>();

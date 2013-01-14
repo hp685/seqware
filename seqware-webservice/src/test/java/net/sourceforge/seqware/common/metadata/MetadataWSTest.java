@@ -59,6 +59,7 @@ public class MetadataWSTest {
 
     @After
     public void tearDown() {
+        instance.clean_up();
     }
 
     /**

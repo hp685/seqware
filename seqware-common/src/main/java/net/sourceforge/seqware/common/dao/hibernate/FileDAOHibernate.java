@@ -173,6 +173,7 @@ public class FileDAOHibernate extends HibernateDaoSupport implements FileDAO {
     while ((c = inStream.read()) != -1) {
       outStream.write(c);
     }
+    outStream.close();
     return file;
   }
 

@@ -4,6 +4,7 @@
 package net.sourceforge.seqware.queryengine.webservice.controller;
 
 
+import net.sourceforge.seqware.common.util.Log;
 import org.restlet.Component;
 import org.restlet.data.Protocol;
 
@@ -44,6 +45,7 @@ public class SeqWareWebServiceMain {
      * @throws java.lang.Exception if any.
      */
     public static void stop() throws Exception {
+        Log.stdout("Stop() in SeqWare WebServiceMain");
         component.stop();
         while (!component.isStopped()) {
             component.stop();
@@ -59,6 +61,7 @@ public class SeqWareWebServiceMain {
         try {
             new SeqWareWebServiceMain();
         } catch (Exception e) {
+            Log.stdout("threw exception() in main() in SeqWareWebServiceMain");
             // Something is wrong.
             e.printStackTrace();
         }

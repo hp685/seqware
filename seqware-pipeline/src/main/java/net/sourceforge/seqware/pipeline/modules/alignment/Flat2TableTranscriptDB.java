@@ -8,12 +8,15 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import net.sourceforge.seqware.common.module.FileMetadata;
 import net.sourceforge.seqware.common.module.ReturnValue;
+import net.sourceforge.seqware.common.util.Log;
 import net.sourceforge.seqware.common.util.filetools.FileTools;
 import net.sourceforge.seqware.common.util.runtools.RunTools;
 import net.sourceforge.seqware.pipeline.module.Module;
@@ -266,35 +269,83 @@ public class Flat2TableTranscriptDB extends Module {
     }  
     
     // Do the user-specified tables already exist?  ("BlatTable", "ExonTable", "GeneTable", "SeqTable", "RefLink")
-    int count1=0, count2=0, count3=0, count4=0, count5=0;
-    try{ 
-      String DBconn = "jdbc:mysql://" + (String)options.valueOf("DBhost") + "/" + (String)options.valueOf("DBname");
-      Connection dbConnection=DriverManager.getConnection(DBconn, (String)options.valueOf("username"), (String)options.valueOf("password")); 
-      Statement s1 = dbConnection.createStatement ();
-      String query1 = "SHOW TABLES like '" + (String)options.valueOf("BlatTable") + "'";
-      ResultSet rs1 = s1.executeQuery(query1);
-      while (rs1.next ()) { ++count1; }  rs1.close ();
-      String query2 = "SHOW TABLES like '" + (String)options.valueOf("ExonTable") + "'";
-      ResultSet rs2 = s1.executeQuery(query2);
-      while (rs2.next ()) { ++count2; }  rs2.close ();
-      String query3 = "SHOW TABLES like '" + (String)options.valueOf("SeqTable") + "'";
-      ResultSet rs3 = s1.executeQuery(query3);
-      while (rs3.next ()) { ++count3; }  rs3.close ();      
-      String query4 = "SHOW TABLES like '" + (String)options.valueOf("GeneTable") + "'";
-      ResultSet rs4 = s1.executeQuery(query4);
-      while (rs4.next ()) { ++count4; }  rs4.close ();
-      if (options.has("RefLink")) { 
-        String query5 = "SHOW TABLES like '" + (String)options.valueOf("RefLink") + "'";
-        ResultSet rs5 = s1.executeQuery(query5);
-        while (rs5.next ()) { ++count5; }  rs5.close ();
+      int count1 = 0, count2 = 0, count3 = 0, count4 = 0, count5 = 0;
+      Connection dbConnection = null;
+      Statement s1 = null;
+      ResultSet rs1 = null;
+      ResultSet rs2 = null;
+      ResultSet rs3 = null;
+      ResultSet rs4 = null;
+      ResultSet rs5 = null;
+      try {
+          String DBconn = "jdbc:mysql://" + (String) options.valueOf("DBhost") + "/" + (String) options.valueOf("DBname");
+          dbConnection = DriverManager.getConnection(DBconn, (String) options.valueOf("username"), (String) options.valueOf("password"));
+          s1 = dbConnection.createStatement();
+          String query1 = "SHOW TABLES like '" + (String) options.valueOf("BlatTable") + "'";
+          rs1 = s1.executeQuery(query1);
+          while (rs1.next()) {
+              ++count1;
+          }
+          rs1.close();
+          String query2 = "SHOW TABLES like '" + (String) options.valueOf("ExonTable") + "'";
+          rs2 = s1.executeQuery(query2);
+          while (rs2.next()) {
+              ++count2;
+          }
+          rs2.close();
+          String query3 = "SHOW TABLES like '" + (String) options.valueOf("SeqTable") + "'";
+          rs3 = s1.executeQuery(query3);
+          while (rs3.next()) {
+              ++count3;
+          }
+          rs3.close();
+          String query4 = "SHOW TABLES like '" + (String) options.valueOf("GeneTable") + "'";
+          rs4 = s1.executeQuery(query4);
+          while (rs4.next()) {
+              ++count4;
+          }
+          rs4.close();
+          if (options.has("RefLink")) {
+              String query5 = "SHOW TABLES like '" + (String) options.valueOf("RefLink") + "'";
+              rs5 = s1.executeQuery(query5);
+              while (rs5.next()) {
+                  ++count5;
+              }
+              rs5.close();
+          }
+          s1.close();
+          dbConnection.close();
+      } catch (SQLException e) {
+          Log.fatal("Database could not initialize", e);
+          ret.setStderr(e.getMessage());
+          ret.setExitStatus(ReturnValue.DBCOULDNOTINITIALIZE);
+      } finally {
+          try {
+              if (dbConnection != null) {
+                  dbConnection.close();
+              }
+              if (s1 != null) {
+                  s1.close();
+              }
+              if (rs2 != null) {
+                  rs2.close();
+              }
+              if (rs3 != null) {
+                  rs3.close();
+              }
+              if (rs4 != null) {
+                  rs4.close();
+              }
+              if (rs5 != null) {
+                  rs5.close();
+              }
+              if (rs1 != null) {
+                  rs1.close();
+              }
+          } catch (SQLException ex) {
+              Log.error("Could not close dbConnection", ex);
+          }
       }
-      s1.close ();     
-      dbConnection.close();
-    } catch( SQLException e ){
-      e.printStackTrace();
-      ret.setStderr(e.getMessage());
-      ret.setExitStatus(ReturnValue.DBCOULDNOTINITIALIZE);
-    }
     int countALL = count1+count2+count3+count4+count5;
     if (countALL > 0) {
       StringBuffer ExistingTables = new StringBuffer();

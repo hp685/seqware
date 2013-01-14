@@ -3,11 +3,12 @@ package net.sourceforge.seqware.metadb.util;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import org.apache.log4j.Logger;
-import java.io.InputStreamReader;
 
 /**
  * <p>TestDatabaseCreator class.</p>
@@ -44,7 +45,7 @@ public class TestDatabaseCreator {
         }
 
         first_time_created = false;
-        Connection connectionToPostgres = null;
+//        Connection connectionToPostgres = null;
         Connection connectionToSeqware = null;
         try {
             // connectionToPostgres = createConnection(POSTGRE_DB, POSTGRE_USER, POSTGRE_PASSWORD);
@@ -55,9 +56,9 @@ public class TestDatabaseCreator {
             e.printStackTrace();
             logger.info("TestDatabaseCreator.createDatabase " + e.getMessage());
         } finally {
-            if (connectionToPostgres != null) {
-                connectionToPostgres.close();
-            }
+//            if (connectionToPostgres != null) {
+//                connectionToPostgres.close();
+//            }
             if (connectionToSeqware != null) {
                 connectionToSeqware.close();
             }
@@ -93,7 +94,15 @@ public class TestDatabaseCreator {
     }
 
     private static void unLoadDatabase(Connection connection) throws SQLException {
-        connection.createStatement().execute("DROP DATABASE IF EXISTS "+SEQWARE_DB+";");
+        Statement createStatement = null;
+        try{
+            createStatement = connection.createStatement();
+            createStatement.execute("DROP DATABASE IF EXISTS "+SEQWARE_DB+";");
+        } finally{
+            if (createStatement != null) {
+                createStatement.close();
+            }
+        }
     }
 
     private static Connection createConnection(String databaseName, String userName, String password) throws Exception {
@@ -119,24 +128,41 @@ public class TestDatabaseCreator {
     }
 
     private static void loadDatabase(Connection connection) throws SQLException {
-        System.out.println("----------------Creating Database "+SEQWARE_DB+"--------------------");
-        connection.createStatement().execute("DROP DATABASE IF EXISTS "+SEQWARE_DB+";");
-        connection.createStatement().execute("CREATE DATABASE "+SEQWARE_DB+" WITH OWNER = "+SEQWARE_USER+";");
+        Statement st1 = null;
+        Statement st2 = null;
+        try {
+            System.out.println("----------------Creating Database " + SEQWARE_DB + "--------------------");
+            st1 = connection.createStatement();
+            st1.execute("DROP DATABASE IF EXISTS " + SEQWARE_DB + ";");
+            st2 = connection.createStatement();
+            st2.execute("CREATE DATABASE " + SEQWARE_DB + " WITH OWNER = " + SEQWARE_USER + ";");
+        } finally {
+            DBUtils.closeStatement(st1);
+            DBUtils.closeStatement(st2);
+        }
     }
 
     private static void loadDBStructure(Connection connection) throws SQLException {
         System.out.println("----------------Loading dump into PostgreSQL--------------------");
+        Statement st1 = null;
+        Statement st2 = null;
+        Statement st3 = null;
         try {
             System.out.println("Loading schema");
-            connection.createStatement().execute(getClassPathFileToString("seqware_meta_db.sql"));
+            st1 = connection.createStatement();
+            st1.execute(getClassPathFileToString("seqware_meta_db.sql"));
             System.out.println("Loading basic data");
-            connection.createStatement().execute(getClassPathFileToString("seqware_meta_db_data.sql"));
+            st2 = connection.createStatement();
+            st2.execute(getClassPathFileToString("seqware_meta_db_data.sql"));
             System.out.println("Loading testing data");
-            connection.createStatement().execute(getClassPathFileToString("seqware_meta_db_testdata.sql"));
-	
-
+            st3 = connection.createStatement();
+            st3.execute(getClassPathFileToString("seqware_meta_db_testdata.sql"));
         } catch (IOException e) {
             e.printStackTrace();
+        } finally{
+            DBUtils.closeStatement(st1);
+            DBUtils.closeStatement(st2);
+            DBUtils.closeStatement(st3);
         }
         System.out.println("----------------Dump Loaded--------------------");
     }

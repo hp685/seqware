@@ -11,6 +11,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import net.sourceforge.seqware.common.util.DBUtils;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -133,11 +134,10 @@ public class MetadataDB {
     Connection c = setupConnection();
 
     String filePath = null;
-    
+    ResultSet rs = null;
     Statement s = null;
     try {
       s = c.createStatement();
-      ResultSet rs = null;
       rs = s.executeQuery("select file_path from file where sw_accession = "+accession);
 
       if (rs.next()) {
@@ -153,6 +153,10 @@ public class MetadataDB {
           "that probably means our SQL is invalid:\n"+se.getMessage()+"\n");
           se.printStackTrace();
           return(null);
+    } finally{
+        DBUtils.closeConnection(c);
+        DBUtils.closeStatement(s);
+        DBUtils.closeResultSet(rs);
     }
     return(filePath);
  }
@@ -235,76 +239,82 @@ public class MetadataDB {
   }
 
   
-  private ArrayList<Map<String, String>> moreGenericGetMetadata(String query) {
+    private ArrayList<Map<String, String>> moreGenericGetMetadata(String query) {
 
-    ArrayList<Map<String, String>> data = new ArrayList<Map<String, String>>();
-    
-    String rootURL = EnvUtil.getProperty("rooturl");
+        ArrayList<Map<String, String>> data = new ArrayList<Map<String, String>>();
 
-    Connection c = setupConnection();
+        String rootURL = EnvUtil.getProperty("rooturl");
 
-    Statement s = null;
-    try {
-      s = c.createStatement();
-    } catch (SQLException se) {
-      System.out.println("We got an exception while creating a statement:" +
-      "that probably means we're no longer connected.");
-      se.printStackTrace();
-      return(null);
-    }
+        Connection c = null;
+        Statement s = null;
+        ResultSet rs = null;
+        
+        try {
+            c = setupConnection();
+            try {
+                s = c.createStatement();
+            } catch (SQLException se) {
+                System.out.println("We got an exception while creating a statement:"
+                        + "that probably means we're no longer connected.");
+                se.printStackTrace();
+                return (null);
+            }
 
-    ResultSet rs = null;
-    try {
-      rs = s.executeQuery(query);
-    } catch (SQLException se) {
-      System.out.println("We got an exception while executing our query:" +
-      "that probably means our SQL is invalid:\n"+query+"\n");
-      se.printStackTrace();
-      return(null);
-    }
+            try {
+                rs = s.executeQuery(query);
+            } catch (SQLException se) {
+                System.out.println("We got an exception while executing our query:"
+                        + "that probably means our SQL is invalid:\n" + query + "\n");
+                se.printStackTrace();
+                return (null);
+            }
 
-    try {
-      
-      ResultSetMetaData rsMetaData = rs.getMetaData();
+            try {
 
-      int numberOfColumns = rsMetaData.getColumnCount();
-      Map<Integer, String> columnNames = new HashMap<Integer, String>();
-      for (int i = 1; i <= numberOfColumns; i++) {
-        // get the column's name.
-        System.out.println(rsMetaData.getColumnName(i));
-        columnNames.put(i, rsMetaData.getColumnName(i));
-      }
-      while (rs.next()) {
-        Map<String, String> result = new HashMap<String, String>();
-        for (int i=1; i<=numberOfColumns; i++) {
-          String key = columnNames.get(i);
-          String value = rs.getString(i);
-          if (key == null) { key = ""; }
-          if (value == null) { value = ""; }
-          result.put(key, value);
+                ResultSetMetaData rsMetaData = rs.getMetaData();
+
+                int numberOfColumns = rsMetaData.getColumnCount();
+                Map<Integer, String> columnNames = new HashMap<Integer, String>();
+                for (int i = 1; i <= numberOfColumns; i++) {
+                    // get the column's name.
+                    System.out.println(rsMetaData.getColumnName(i));
+                    columnNames.put(i, rsMetaData.getColumnName(i));
+                }
+                while (rs.next()) {
+                    Map<String, String> result = new HashMap<String, String>();
+                    for (int i = 1; i <= numberOfColumns; i++) {
+                        String key = columnNames.get(i);
+                        String value = rs.getString(i);
+                        if (key == null) {
+                            key = "";
+                        }
+                        if (value == null) {
+                            value = "";
+                        }
+                        result.put(key, value);
+                    }
+                    data.add(result);
+                }
+            } catch (SQLException se) {
+                System.out.println("We got an exception while getting a result:this "
+                        + "shouldn't happen: we've done something really bad.");
+                se.printStackTrace();
+                return null;
+            }
+
+        } finally {
+
+            // cleanup connection
+            boolean b1 = DBUtils.closeResultSet(rs);
+            boolean b2 = DBUtils.closeStatement(s);
+            boolean b3 = DBUtils.closeConnection(c);
+            if (b1 || b2 || b3) {
+                data = null;
+            }
         }
-        data.add(result);
-      }
-    } catch (SQLException se) {
-      System.out.println("We got an exception while getting a result:this " +
-      "shouldn't happen: we've done something really bad.");
-      se.printStackTrace();
-      return(null);
-    }
 
-    // cleanup connection
-    try {
-      rs.close();
-      s.close();
-      c.close();
-    } catch (SQLException se) {
-      System.out.println("We got an exception while trying to close connections ");
-      se.printStackTrace();
-      return(null);
+        return data;
     }
-
-    return(data);
-  }
   
   private ArrayList genericGetMetadata(String query) {
 
@@ -312,10 +322,14 @@ public class MetadataDB {
     
     String rootURL = EnvUtil.getProperty("rooturl");
 
-    Connection c = setupConnection();
-
+    Connection c = null;
     Statement s = null;
+    ResultSet rs = null;
+    
+    try{
+    
     try {
+        c = setupConnection();
       s = c.createStatement();
     } catch (SQLException se) {
       System.out.println("We got an exception while creating a statement:" +
@@ -324,7 +338,6 @@ public class MetadataDB {
       return(null);
     }
 
-    ResultSet rs = null;
     try {
       rs = s.executeQuery(query);
     } catch (SQLException se) {
@@ -367,20 +380,14 @@ public class MetadataDB {
       "shouldn't happen: we've done something really bad.");
       se.printStackTrace();
       return(null);
+    } }finally{
+        DBUtils.closeResultSet(rs);
+        DBUtils.closeStatement(s);
+        DBUtils.closeConnection(c);
+        data = null;
     }
 
-    // cleanup connection
-    try {
-      rs.close();
-      s.close();
-      c.close();
-    } catch (SQLException se) {
-      System.out.println("We got an exception while trying to close connections ");
-      se.printStackTrace();
-      return(null);
-    }
-
-    return(data);
+    return data;
   }
 
   /**
@@ -411,75 +418,74 @@ public class MetadataDB {
   }
   
   
-  private Map getMetadata(long swid, String queryStr) {
+    private Map getMetadata(long swid, String queryStr) {
 
-    // the data to return
-    Map data = new HashMap();
-    
-    String rootURL = EnvUtil.getProperty("rooturl");
+        // the data to return
+        Map data = new HashMap();
 
-    // load data from the database
-    Connection c = setupConnection();
+        String rootURL = EnvUtil.getProperty("rooturl");
 
-    Statement s = null;
-    try {
-      s = c.createStatement();
-    } catch (SQLException se) {
-      System.out.println("We got an exception while creating a statement:" +
-      "that probably means we're no longer connected.");
-      se.printStackTrace();
-      return(null);
-    }
+        // load data from the database
+        Connection c = null;
+        Statement s = null;
+        ResultSet rs = null;
+        try {
 
-    ResultSet rs = null;
-    String query = queryStr;
-    
-    try {
-      rs = s.executeQuery(query);
-    } catch (SQLException se) {
-      System.out.println("We got an exception while executing our query:" +
-      "that probably means our SQL is invalid: "+query);
-      se.printStackTrace();
-      return(null);
-    }
+            try {
+                c = setupConnection();
+                s = c.createStatement();
+            } catch (SQLException se) {
+                System.out.println("We got an exception while creating a statement:"
+                        + "that probably means we're no longer connected.");
+                se.printStackTrace();
+                return null;
+            }
 
-    // read the file path and 
-    try {
-      if (rs.next()) {
-        data.put("filePath", rs.getString(1));
-        data.put("desc", rs.getString(2));
-        data.put("swid", rs.getLong(3));
-        data.put("uri", rootURL);
-        String params = rs.getString(4);
-        if (params != null && !"NA".equals(params) && params.contains("=")) {
-          String[] paramsArray = params.split(",");
-          for (String param : paramsArray) {
-            String[] kv = param.split("=");
-            data.put(kv[0], kv[1]);
-          }
+            String query = queryStr;
+
+            try {
+                rs = s.executeQuery(query);
+            } catch (SQLException se) {
+                System.out.println("We got an exception while executing our query:"
+                        + "that probably means our SQL is invalid: " + query);
+                se.printStackTrace();
+                return null;
+            }
+
+            // read the file path and 
+            try {
+                if (rs.next()) {
+                    data.put("filePath", rs.getString(1));
+                    data.put("desc", rs.getString(2));
+                    data.put("swid", rs.getLong(3));
+                    data.put("uri", rootURL);
+                    String params = rs.getString(4);
+                    if (params != null && !"NA".equals(params) && params.contains("=")) {
+                        String[] paramsArray = params.split(",");
+                        for (String param : paramsArray) {
+                            String[] kv = param.split("=");
+                            data.put(kv[0], kv[1]);
+                        }
+                    }
+                    data.put("params", params);
+                    data.put("createTstmp", rs.getString(5));
+                    data.put("metatype", rs.getString(6));
+                }
+            } catch (SQLException se) {
+                System.out.println("We got an exception while getting a result:this "
+                        + "shouldn't happen: we've done something really bad.");
+                se.printStackTrace();
+                return (null);
+            }
+
+        } finally {
+            DBUtils.closeResultSet(rs);
+            DBUtils.closeStatement(s);
+            DBUtils.closeConnection(c);
         }
-        data.put("params", params);
-        data.put("createTstmp", rs.getString(5));
-        data.put("metatype", rs.getString(6));
-      }
-    }  catch (SQLException se) {
-      System.out.println("We got an exception while getting a result:this " +
-      "shouldn't happen: we've done something really bad.");
-      se.printStackTrace();
-      return(null);
-    }
 
-    try {
-      rs.close();
-      s.close();
-      c.close();
-    } catch (SQLException se) {
-      System.out.println("We got an exception while trying to close connections ");
-      se.printStackTrace();
+        return data;
     }
-
-    return(data);
-  }
   
   /**
    * <p>addWorkflowRunParam.</p>
@@ -491,12 +497,13 @@ public class MetadataDB {
    */
   public void addWorkflowRunParam(int workflowRunAccession, String key, String value, String type) {
     
-    Connection c = setupConnection();
+    Connection c = null;
     Statement s = null;
     ResultSet rs = null;
     int workflowRunId = 0;
     
     try {
+      c = setupConnection();
       s = c.createStatement();
       rs = s.executeQuery("select workflow_run_id from workflow_run where sw_accession = "+workflowRunAccession);
       if (rs.next()) {
@@ -515,89 +522,91 @@ public class MetadataDB {
       System.out.println("We got an exception while executing our query:" +
       "that probably means our SQL is invalid: ");
       se.printStackTrace();
+    } finally{
+        DBUtils.closeResultSet(rs);
+        DBUtils.closeStatement(s);
+        DBUtils.closeConnection(c);
     }
    
   }
   
-  /**
-   * <p>scheduleWorkflowRun.</p>
-   *
-   * @param workflowAccession a int.
-   * @param name a {@link java.lang.String} object.
-   * @param cwd a {@link java.lang.String} object.
-   * @param iniContents a {@link java.lang.String} object.
-   * @param command a {@link java.lang.String} object.
-   * @param workflowTemplate a {@link java.lang.String} object.
-   * @param status a {@link java.lang.String} object.
-   * @return a int.
-   */
-  public int scheduleWorkflowRun(int workflowAccession, String name, String cwd, 
-          String iniContents, String command, String workflowTemplate, String status) {
-    
-    int workflowRunAccession = 0;
-    int workflowId = 0;
-    Connection c = setupConnection();
-    Statement s = null;
-    
-    try {
-      s = c.createStatement();
-    } catch (SQLException se) {
-      System.out.println("We got an exception while creating a statement:" +
-      "that probably means we're no longer connected.");
-      se.printStackTrace();
-      return(0);
-    }
+    /**
+     * <p>scheduleWorkflowRun.</p>
+     *
+     * @param workflowAccession a int.
+     * @param name a {@link java.lang.String} object.
+     * @param cwd a {@link java.lang.String} object.
+     * @param iniContents a {@link java.lang.String} object.
+     * @param command a {@link java.lang.String} object.
+     * @param workflowTemplate a {@link java.lang.String} object.
+     * @param status a {@link java.lang.String} object.
+     * @return a int.
+     */
+    public int scheduleWorkflowRun(int workflowAccession, String name, String cwd,
+            String iniContents, String command, String workflowTemplate, String status) {
 
-    ResultSet rs = null;
-    
-    try {
-      rs = s.executeQuery("select workflow_id from workflow where sw_accession = "+workflowAccession);
-    } catch (SQLException se) {
-      System.out.println("We got an exception while executing our query:" +
-      "that probably means our SQL is invalid: ");
-      se.printStackTrace();
-      return(0);
-    }
-    
-    try {
-      if (rs.next()) {
-        workflowId = rs.getInt(1);
-      }
-    } catch (SQLException e) {
-      e.printStackTrace();
-      return(0);
-    }
-    
-    if (workflowId > 0) {
-      try {
-        // workflowAccession, name, cwd, iniContents.toString(), command, workflowTemplate
-        s.execute("insert into workflow_run (workflow_id, create_tstmp, name, current_working_dir, ini_file, cmd, workflow_template, status) values" +
-        		" ("+workflowId+", now(), '"+name+"', " +
-        		"'"+cwd+"', '"+iniContents+"', '"+command+"', '"+workflowTemplate+"', '"+status+"')");
-        rs = s.executeQuery("select currval('sw_accession_seq')");
-        if (rs.next()) {
-          workflowRunAccession = rs.getInt(1);
+        int workflowRunAccession = 0;
+        int workflowId = 0;
+        Connection c = null;
+        Statement s = null;
+        ResultSet rs = null;
+        try {
+
+            try {
+                c = setupConnection();
+                s = c.createStatement();
+            } catch (SQLException se) {
+                System.out.println("We got an exception while creating a statement:"
+                        + "that probably means we're no longer connected.");
+                se.printStackTrace();
+                return (0);
+            }
+
+
+            try {
+                rs = s.executeQuery("select workflow_id from workflow where sw_accession = " + workflowAccession);
+            } catch (SQLException se) {
+                System.out.println("We got an exception while executing our query:"
+                        + "that probably means our SQL is invalid: ");
+                se.printStackTrace();
+                return (0);
+            }
+
+            try {
+                if (rs.next()) {
+                    workflowId = rs.getInt(1);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return (0);
+            }
+
+            if (workflowId > 0) {
+                try {
+                    // workflowAccession, name, cwd, iniContents.toString(), command, workflowTemplate
+                    s.execute("insert into workflow_run (workflow_id, create_tstmp, name, current_working_dir, ini_file, cmd, workflow_template, status) values"
+                            + " (" + workflowId + ", now(), '" + name + "', "
+                            + "'" + cwd + "', '" + iniContents + "', '" + command + "', '" + workflowTemplate + "', '" + status + "')");
+                    DBUtils.closeResultSet(rs);
+                    rs = s.executeQuery("select currval('sw_accession_seq')");
+                    if (rs.next()) {
+                        workflowRunAccession = rs.getInt(1);
+                    }
+                } catch (SQLException se) {
+                    System.out.println("Problem with SQL: " + se.getMessage());
+                    se.printStackTrace();
+                    return (0);
+                }
+            }
+        } finally {
+            DBUtils.closeResultSet(rs);
+            DBUtils.closeStatement(s);
+            DBUtils.closeConnection(c);
         }
-      } catch (SQLException se) {
-        System.out.println("Problem with SQL: "+se.getMessage());
-        se.printStackTrace();
-        return(0);
-      }
+
+        return workflowRunAccession;
+
     }
-    
-    
-    try {
-      rs.close();
-      s.close();
-      c.close();
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
-    
-    
-    return workflowRunAccession;
-    
-  }
   
   /**
    * <p>updateWorkflowRun.</p>
@@ -650,53 +659,51 @@ public class MetadataDB {
    * @param workflowId a int.
    * @return a int.
    */
-  public int getWorkflowAccession(int workflowId) {
+    public int getWorkflowAccession(int workflowId) {
 
-    // workflow accession
-    int workflowAccession = 0;
-    
-    // load data from the database
-    Connection c = setupConnection();
+        // workflow accession
+        int workflowAccession = 0;
 
-    Statement s = null;
-    try {
-      s = c.createStatement();
-    } catch (SQLException se) {
-      System.out.println("We got an exception while creating a statement:" +
-      "that probably means we're no longer connected.");
-      se.printStackTrace();
-      return(0);
-    }
+        // load data from the database
+        Connection c = null;
+        ResultSet rs = null;
+        Statement s = null;
 
-    ResultSet rs = null;
-    
-    try {
-      rs = s.executeQuery("select sw_accession from workflow where workflow_id = "+workflowId);
-    } catch (SQLException se) {
-      System.out.println("We got an exception while executing our query:" +
-      "that probably means our SQL is invalid: ");
-      se.printStackTrace();
-      return(0);
+        try {
+            c = setupConnection();
+            try {
+                s = c.createStatement();
+            } catch (SQLException se) {
+                System.out.println("We got an exception while creating a statement:"
+                        + "that probably means we're no longer connected.");
+                se.printStackTrace();
+                return (0);
+            }
+
+            try {
+                rs = s.executeQuery("select sw_accession from workflow where workflow_id = " + workflowId);
+            } catch (SQLException se) {
+                System.out.println("We got an exception while executing our query:"
+                        + "that probably means our SQL is invalid: ");
+                se.printStackTrace();
+                return (0);
+            }
+
+            try {
+                if (rs.next()) {
+                    workflowAccession = rs.getInt(1);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return (0);
+            }
+        } finally {
+            DBUtils.closeConnection(c);
+            DBUtils.closeResultSet(rs);
+            DBUtils.closeStatement(s);
+        }
+
+        return workflowAccession;
     }
-    
-    try {
-      if (rs.next()) {
-        workflowAccession = rs.getInt(1);
-      }
-    } catch (SQLException e) {
-      e.printStackTrace();
-      return(0);
-    }
-    
-    try {
-      rs.close();
-      s.close();
-      c.close();
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
-    
-    return workflowAccession;
-  }
 
 }
